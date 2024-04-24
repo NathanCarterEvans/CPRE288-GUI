@@ -2,8 +2,8 @@ import time
 import socket
 
 # TCP Socket BEGIN
-HOST = "192.168.1.1"  # Standard loopback interface IP address (localhost)
-PORT = 288  # Port to listen on (non-privileged ports are > 1023)
+HOST = "127.0.0.1"  # Standard loopback interface IP address (localhost)
+PORT = 65432  # Port to listen on (non-privileged ports are > 1023)
 
 print("Creating Socket object ")
 cybot_server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Create a socket object
