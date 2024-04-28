@@ -30,24 +30,30 @@ def plot_point(distance, angle, fill='blue', radius=5):
 
 client_socket = None
 
+
+
 # Function to handle incoming messages from the CyBot
 def receive_messages():
     global client_socket
     while True:
         try:
-            message = client_socket.recv(1024).decode()
-            if message:
-                msg = json.loads(message)
-                distance = msg['distance']
-                if 'angle' in msg: # the data is a scan
-                    angle = msg['angle']
-                    plot_point(distance, angle)
-                if 'size' in msg: # the data is an obstacle
-                    size = msg['size']
-                    middle_angle = msg['angle_middle']
-                    plot_point(distance, middle_angle, fill='red', radius=size)
-            else:
-                break
+            messageH = client_socket.recv(1024).decode()
+            messages = messageH.split('}')
+            messages = filter(lambda m: m.strip() != '', messages)
+            for message in map(lambda m: m+"}", messages): 
+                print(message)
+                if message:
+                    msg = json.loads(message)
+                    distance = msg['distance']
+                    if 'angle' in msg: # the data is a scan
+                        angle = msg['angle']
+                        plot_point(distance, angle)
+                    if 'size' in msg: # the data is an obstacle
+                        size = msg['size']
+                        middle_angle = msg['angle_middle']
+                        plot_point(distance, middle_angle, fill='red', radius=size)
+                else:
+                    break
         except OSError:
             break
         except Exception as e:
