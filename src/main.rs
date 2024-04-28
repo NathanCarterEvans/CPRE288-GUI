@@ -1,15 +1,18 @@
 pub mod cybot;
+mod obstacle;
+mod scan;
 
 use std::{
     io::{Read, Write},
-    net::{TcpStream, SocketAddr},
+    net::{SocketAddr, TcpStream},
     time::Duration,
 };
 
-use cybot::{Cybot, CybotScanData};
+use cybot::Cybot;
 use macroquad::prelude::*;
 
-use crate::cybot::ObstacleData;
+use obstacle::ObstacleData;
+use scan::CybotScanData;
 
 #[macroquad::main("BasicShapes")]
 async fn main() {
