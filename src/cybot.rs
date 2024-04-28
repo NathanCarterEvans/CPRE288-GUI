@@ -1,6 +1,7 @@
 use crate::obstacle::ObstacleData;
 use crate::scan::CybotScanData;
 use macroquad::prelude::*;
+use crate::overlay::draw_overlay;
 
 pub const CYBOT_RADIUS: f32 = 15_f32;
 pub const SOUND_THICKNESS: f32 = 20.0;
@@ -20,6 +21,7 @@ impl Cybot {
     }
     pub fn draw_bot(&self) {
         draw_circle(self.x, self.y, CYBOT_RADIUS, YELLOW);
+        draw_overlay(self.x, self.y);
         if let Some(d) = &self.data {
             d.draw_scan_data(self.x, self.y);
         }

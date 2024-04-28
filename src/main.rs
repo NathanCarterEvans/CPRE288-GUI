@@ -1,6 +1,7 @@
 pub mod cybot;
 mod obstacle;
 mod scan;
+mod overlay;
 
 use std::{
     io::{Read, Write},
