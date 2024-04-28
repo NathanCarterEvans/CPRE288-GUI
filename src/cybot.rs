@@ -1,6 +1,6 @@
-use macroquad::prelude::*;
 use crate::obstacle::ObstacleData;
 use crate::scan::CybotScanData;
+use macroquad::prelude::*;
 
 pub const CYBOT_RADIUS: f32 = 15_f32;
 pub const SOUND_THICKNESS: f32 = 20.0;
