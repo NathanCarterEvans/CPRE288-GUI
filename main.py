@@ -41,8 +41,11 @@ def receive_messages():
             messageH = client_socket.recv(1024).decode()
             messages = messageH.split('}')
             messages = filter(lambda m: m.strip() != '', messages)
-            for message in map(lambda m: m+"}", messages): 
+            def mapper(message): 
                 message = message[message.find("{"):]
+                return message+"}" 
+            
+            for message in map(mapper, messages): 
                 print(message)
                 if message:
                     msg = json.loads(message)
