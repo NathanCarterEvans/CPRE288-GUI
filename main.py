@@ -2,6 +2,7 @@ import tkinter as tk
 import math
 import socket
 import threading
+import json
 
 # Create the main window
 root = tk.Tk()
@@ -35,7 +36,9 @@ def receive_messages():
         try:
             message = client_socket.recv(1024).decode()
             if message:
-                distance, angle = map(int, message.split(','))
+                msg = json.loads(message)
+                distance = msg['distance']
+                angle = msg['angle']
                 plot_point(distance, angle)
             else:
                 break
