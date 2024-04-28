@@ -36,11 +36,13 @@ client_socket = None
 def receive_messages():
     global client_socket
     while True:
+        print("running")
         try:
             messageH = client_socket.recv(1024).decode()
             messages = messageH.split('}')
             messages = filter(lambda m: m.strip() != '', messages)
             for message in map(lambda m: m+"}", messages): 
+                message = message[message.find("{"):]
                 print(message)
                 if message:
                     msg = json.loads(message)
@@ -64,8 +66,8 @@ def connect_to_cybot():
     global client_socket
     try:
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # client_socket.settimeout(3)
-        client_socket.connect(('127.0.0.1', 288))
+        client_socket.settimeout(3)
+        client_socket.connect(('192.168.1.1', 288))
         threading.Thread(target=receive_messages, daemon=True).start()
     except Exception as e:
         print("Could not connect to CyBot:", e)
