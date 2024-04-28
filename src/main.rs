@@ -22,10 +22,12 @@ async fn main() {
     println!("connected");
     let mut buf = [0_u8; 200];
 
-    let h = screen_height();
-    let w = screen_width();
-    let mut bot = Cybot::new(w / 2., h / 2.);
+    let mut bot = Cybot::new(0_f32,0_f32);
     loop {
+        let h = screen_height();
+        let w = screen_width();
+        bot.x = w/2_f32;
+        bot.y = h * 0.8;
         clear_background(BLACK);
         if let Some(c) = get_char_pressed() {
             stream.write(&[c as u8]).expect("error writing");

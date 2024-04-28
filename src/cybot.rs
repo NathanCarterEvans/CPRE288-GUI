@@ -3,15 +3,15 @@ use crate::scan::CybotScanData;
 use macroquad::prelude::*;
 use crate::overlay::draw_overlay;
 
-pub const CYBOT_RADIUS: f32 = 15_f32;
+pub const CYBOT_RADIUS: f32 = 34_f32; // cybot is measured as 34 cm
 pub const SOUND_THICKNESS: f32 = 20.0;
 pub const IR_THICKNESS: f32 = 5.0;
 pub const SOUND_COLOR: Color = BLUE;
 pub const IR_COLOR: Color = RED;
 
 pub struct Cybot {
-    x: f32,
-    y: f32,
+    pub x: f32,
+    pub y: f32,
     pub data: Option<CybotScanData>,
 }
 
