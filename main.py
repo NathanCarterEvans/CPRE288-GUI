@@ -21,11 +21,12 @@ canvas.create_oval(center_x-radius, center_y-radius, center_x+radius, center_y+r
 cybot_size = 10  # Size of the CyBot's representation
 canvas.create_oval(center_x-cybot_size, center_y-cybot_size, center_x+cybot_size, center_y+cybot_size, fill='red')
 
-def plot_point(distance, angle):
+def plot_point(distance, angle, fill='blue', radius=5):
     angle_rad = math.radians(angle)
     x = center_x + distance * math.cos(angle_rad)
     y = center_y - distance * math.sin(angle_rad)
-    canvas.create_oval(x-5, y-5, x+5, y+5, fill='blue')
+
+    canvas.create_oval(x-radius, y-radius, x+radius, y+radius, fill=fill)
 
 client_socket = None
 
@@ -38,8 +39,13 @@ def receive_messages():
             if message:
                 msg = json.loads(message)
                 distance = msg['distance']
-                angle = msg['angle']
-                plot_point(distance, angle)
+                if 'angle' in msg: # the data is a scan
+                    angle = msg['angle']
+                    plot_point(distance, angle)
+                if 'size' in msg: # the data is an obstacle
+                    size = msg['size']
+                    middle_angle = msg['angle_middle']
+                    plot_point(distance, middle_angle, fill='red', radius=size)
             else:
                 break
         except OSError:
@@ -52,8 +58,8 @@ def connect_to_cybot():
     global client_socket
     try:
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_socket.settimeout(3)
-        client_socket.connect(('192.168.1.1', 288))
+        # client_socket.settimeout(3)
+        client_socket.connect(('127.0.0.1', 288))
         threading.Thread(target=receive_messages, daemon=True).start()
     except Exception as e:
         print("Could not connect to CyBot:", e)
