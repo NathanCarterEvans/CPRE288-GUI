@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use macroquad::math::{f32, i32};
 use macroquad::prelude::draw_line;
-use crate::cybot::{IR_COLOR, IR_THICKNESS, SOUND_COLOR, SOUND_THICKNESS};
+use crate::cybot::{SOUND_COLOR, SOUND_THICKNESS};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CybotScanData {

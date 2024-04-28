@@ -12,6 +12,6 @@ pub struct ObstacleData {
 
 impl ObstacleData {
     pub fn draw(&self, x: f32, y: f32) {
-        draw_circle(x, y, (self.size / 2_f32), GREEN);
+        draw_circle(x, y, self.size / 2_f32, GREEN);
     }
 }

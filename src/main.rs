@@ -5,7 +5,6 @@ mod scan;
 use std::{
     io::{Read, Write},
     net::{SocketAddr, TcpStream},
-    time::Duration,
 };
 
 use cybot::Cybot;
@@ -19,10 +18,8 @@ async fn main() {
     let mut objs = vec![];
     let addr = SocketAddr::from(([127, 0, 0, 1], 288));
     let mut stream = TcpStream::connect(addr).expect("error connecting to host");
-    let mut buf = [0_u8; 200];
     println!("connected");
     let mut buf = [0_u8; 200];
-    let b = stream.set_read_timeout(Some(Duration::from_millis(200)));
 
     let h = screen_height();
     let w = screen_width();

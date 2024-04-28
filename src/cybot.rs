@@ -32,5 +32,4 @@ impl Cybot {
             obj.draw(x, y);
         }
     }
-    pub fn move_bot(&mut self, distance: f32, deg: f32) {}
 }
