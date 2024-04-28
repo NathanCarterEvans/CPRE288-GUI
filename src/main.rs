@@ -2,60 +2,63 @@ pub mod cybot;
 
 use std::{
     io::{Read, Write},
-    net::TcpStream,
+    net::{TcpStream, SocketAddr},
+    time::Duration,
 };
-use std::net::SocketAddr;
 
 use cybot::{Cybot, CybotScanData};
 use macroquad::prelude::*;
 
+use crate::cybot::ObstacleData;
+
 #[macroquad::main("BasicShapes")]
 async fn main() {
+    let mut objs = vec![];
     let addr = SocketAddr::from(([127, 0, 0, 1], 288));
     let mut stream = TcpStream::connect(addr).expect("error connecting to host");
     let mut buf = [0_u8; 200];
+    println!("connected");
+    let mut buf = [0_u8; 200];
+    let b = stream.set_read_timeout(Some(Duration::from_millis(200)));
 
+    let h = screen_height();
+    let w = screen_width();
+    let mut bot = Cybot::new(w / 2., h / 2.);
     loop {
         clear_background(BLACK);
-        let bytes_read = stream.read(&mut buf).expect("reading error");
-        if bytes_read > 0 { println!("read {bytes_read:?} bytes"); }
-        let msg = match serde_json::from_slice::<CybotScanData>(&buf[..bytes_read]) {
-            Ok(data) => {
-                let h = screen_height();
-                let w = screen_width();
-                // Draw robot
-                let mut bot = Cybot::new(w / 2., h / 2.);
-                // println!("{}", ser9e_json::to_string(&scan).unwrap());
-                let s = format!("data: \n{data:?}");
-                bot.data = Some(data);
-                bot.draw_bot();
-                s
-            }
-            Err(_) => {
-                let s = String::from_utf8_lossy(&buf[..bytes_read]);
-
-                s.to_string()
-            }
-        };
         if let Some(c) = get_char_pressed() {
             stream.write(&[c as u8]).expect("error writing");
         }
 
-        if !msg.is_empty() { println!("{}", msg); }
+        let read_res = stream.read(&mut buf);
+        if let Ok(bytes_read) = read_res {
+            if let Ok(d) = serde_json::from_slice::<ObstacleData>(&buf[..bytes_read]) {
+                println!("{:?}", d);
+                objs.push(d);
+                println!("{:?}", objs);
+            }
 
-        // draw_line(40.0, 40.0, 100.0, 200.0, 15.0, BLUE);
-        // draw_rectangle(w/ 2.0 - 60.0, 100.0, 120.0, 60.0, GREEN);
-        // draw_circle(w - 30.0, screen_height() - 30.0, 15.0, YELLOW);
-        // draw_text("HELLO", 20.0, 20.0, 20.0, DARKGRAY);
+            println!("read {bytes_read:?} bytes");
+            let msg = update_bot_with_msg(&mut bot, &buf[..bytes_read]);
+            println!("{}", msg);
+        }
 
-        // draw_circle(w/2.,h/2., 14., YELLOW);
+        bot.draw_bot();
+        bot.draw_objs(&objs);
         next_frame().await
     }
 }
 
-// fn main() {
-//     let mut stream = TcpStream::connect("192.168.1.1:288").expect("error connecting to host");
-//     let mut buf = [0_u8; 200];
-//     loop {
-//     }
-// }
+fn update_bot_with_msg(bot: &mut Cybot, read_data: &[u8]) -> String {
+    match serde_json::from_slice::<CybotScanData>(read_data) {
+        Ok(data) => {
+            let s = format!("data: \n{data:?}");
+            bot.data = Some(data);
+            s
+        }
+        Err(_) => {
+            let s = String::from_utf8_lossy(read_data);
+            s.to_string()
+        }
+    }
+}

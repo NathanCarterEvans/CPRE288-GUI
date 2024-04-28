@@ -8,6 +8,22 @@ pub const SOUND_COLOR: Color = BLUE;
 pub const IR_COLOR: Color = RED;
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct ObstacleData {
+    pub start_detection: i32,
+    pub end_detection: i32,
+    pub mid_detection: i32,
+    pub object_num: i32,
+    pub min_distance: f32,
+    pub radial_width: i32,
+}
+
+impl ObstacleData {
+    pub fn draw(&self, x: f32, y: f32) {
+        draw_circle(x, y, (self.radial_width / 2) as f32, GREEN);
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct CybotScanData {
     pub angle: i32, // 90 degrees is forward, 180 is left, 0 is right
     pub sound: f32, // cm
@@ -45,5 +61,13 @@ impl Cybot {
         }
     }
 
+    pub fn draw_objs(&self, objs: &[ObstacleData]) {
+        for obj in objs {
+            let x = self.x + (obj.min_distance * (obj.mid_detection as f32).to_radians().cos());
+            let y = self.y + (obj.min_distance * (obj.mid_detection as f32).to_radians().sin());
+            println!("{}", x);
+            obj.draw(x, y);
+        }
+    }
     pub fn move_bot(&mut self, distance: f32, deg: f32) {}
 }
