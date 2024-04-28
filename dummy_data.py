@@ -10,9 +10,17 @@ s.bind((HOST, PORT))
 s.listen(5)
 print("Server is listening on {}:{}".format(HOST, PORT))
 
-# pub angle: i32, // 90 degrees is forward, 180 is left, 0 is right
-# pub sound: f32, // cm
-# pub ir: i32,
+theirs_obj = {
+        "distance": 30.0, # 
+        "angle_middle": 60, # middle of obstacle
+        "size": 40.3, # arclength
+        }
+
+their_scan = {
+        "angle": 100,
+        "distance": 100, #cm?
+        }
+
 angle = 0
 while True:
     client_socket, client_address = s.accept()
