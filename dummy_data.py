@@ -20,10 +20,12 @@ while True:
     with client_socket:
         while True:
             angle = (angle + 5) % 180
-            data = f'{{ "angle": {angle}, "sound": 98.4, "ir": 0 }}'
+            scan_data = f'{{ "angle": {angle}, "sound": 98.4, "ir": 0 }}'
             try:
-                client_socket.sendall(data.encode())
+                client_socket.sendall(scan_data.encode())
                 time.sleep(0.5)
+                r = client_socket.recv(30)
+                print(r.decode())
             except BrokenPipeError:
                 print('connection closed')
                 break
