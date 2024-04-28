@@ -63,9 +63,8 @@ impl Cybot {
 
     pub fn draw_objs(&self, objs: &[ObstacleData]) {
         for obj in objs {
-            let x = self.x + (obj.min_distance * (obj.mid_detection as f32).to_radians().cos());
-            let y = self.y + (obj.min_distance * (obj.mid_detection as f32).to_radians().sin());
-            println!("{}", x);
+            let x = self.x + (obj.min_distance * (-1.0 * obj.mid_detection as f32).to_radians().cos());
+            let y = self.y + (obj.min_distance * (-1.0 * obj.mid_detection as f32).to_radians().sin());
             obj.draw(x, y);
         }
     }
