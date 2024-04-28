@@ -21,69 +21,46 @@ canvas.create_oval(center_x-radius, center_y-radius, center_x+radius, center_y+r
 cybot_size = 10  # Size of the CyBot's representation
 canvas.create_oval(center_x-cybot_size, center_y-cybot_size, center_x+cybot_size, center_y+cybot_size, fill='red')
 
+# List to store scan point references
+scan_points = []
+
 def plot_point(distance, angle, fill='blue', radius=5):
+    global scan_points
     angle_rad = math.radians(angle)
     x = center_x + distance * math.cos(angle_rad)
     y = center_y - distance * math.sin(angle_rad)
+    # Store canvas item reference
+    point_id = canvas.create_oval(x-radius, y-radius, x+radius, y+radius, fill=fill)
+    scan_points.append(point_id)
 
-    canvas.create_oval(x-radius, y-radius, x+radius, y+radius, fill=fill)
+def clear_scan():
+    global scan_points
+    for point in scan_points:
+        canvas.delete(point)
+    scan_points.clear()  # Clear the list after removing points
 
-client_socket = None
-
-
-
-# Function to handle incoming messages from the CyBot
 def receive_messages():
     global client_socket
     while True:
-        print("running")
         try:
-            messageH = client_socket.recv(1024).decode()
-            #print("first:" + messageH)
-            if('{' in messageH and '}' in messageH):
-                #print("after:" + messageH)
-                messages = messageH.split('}')
-                print(messages)
-                if(len(messages) > 1):
-                    messages.pop(-1)
-                messages = filter(lambda m: m.strip() != '', messages)
-                for message in map(lambda m: m+"}", messages): 
-                    # message = message[:message.find("{")]
-                    print(message)
-                    if message:
-                        msg = json.loads(message)
-                        distance = msg['distance']
-                        if 'angle' in msg: # the data is a scan
-                            angle = msg['angle']
-                            plot_point(distance, angle)
-                        if 'size' in msg: # the data is an obstacle
-                            size = msg['size']
-                            middle_angle = msg['angle_middle']
-                            plot_point(distance, middle_angle, fill='red', radius=size)
-                    else:
-                        break
-            messages = messageH.split('}')
-            messages = filter(lambda m: m.strip() != '', messages)
-            def mapper(message): 
-                message = message[message.find("{"):]
-                return message+"}" 
-            
-            for message in map(mapper, messages): 
-                print(message)
-                if message:
-                    msg = json.loads(message)
-                    distance = msg['distance']
-                    if 'angle' in msg: # the data is a scan
-                        angle = msg['angle']
-                        plot_point(distance, angle)
-                    if 'size' in msg: # the data is an obstacle
-                        size = msg['size']
-                        middle_angle = msg['angle_middle']
-                        plot_point(distance, middle_angle, fill='red', radius=size)
-                else:
-                    break
+            message = client_socket.recv(1024).decode()
+            # Process multiple JSON objects in one message
+            messages = [m + '}' for m in message.split('}') if '{' in m]
+            for msg in messages:
+                print(msg)
+                data = json.loads(msg)
+                distance = data['distance']
+                if 'angle' in data:  # the data is a scan
+                    angle = data['angle']
+                    plot_point(distance, angle)
+                if 'size' in data:  # the data is an obstacle
+                    size = data['size']
+                    middle_angle = data['angle_middle']
+                    plot_point(distance, middle_angle, fill='red', radius=size)
         except OSError:
             break
+        except json.JSONDecodeError:
+            print("Error decoding JSON")
         except Exception as e:
             print(f"Error: {e}")
             break
@@ -117,7 +94,7 @@ button_left = tk.Button(root, text="Turn Left", command=lambda: send_command('a'
 button_left.pack(side='left')
 button_right = tk.Button(root, text="Turn Right", command=lambda: send_command('d'))
 button_right.pack(side='right')
-button_scan = tk.Button(root, text="Scan", command=lambda: send_command('q'))
+button_scan = tk.Button(root, text="Scan", command=lambda: [clear_scan(), send_command('q')])
 button_scan.pack(pady=10)
 
 root.mainloop()
