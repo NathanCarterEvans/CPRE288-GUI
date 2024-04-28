@@ -39,6 +39,7 @@ def receive_messages():
         print("running")
         try:
             messageH = client_socket.recv(1024).decode()
+<<<<<<< HEAD
             #print("first:" + messageH)
             if('{' in messageH and '}' in messageH):
                 #print("after:" + messageH)
@@ -62,6 +63,28 @@ def receive_messages():
                             plot_point(distance, middle_angle, fill='red', radius=size)
                     else:
                         break
+=======
+            messages = messageH.split('}')
+            messages = filter(lambda m: m.strip() != '', messages)
+            def mapper(message): 
+                message = message[message.find("{"):]
+                return message+"}" 
+            
+            for message in map(mapper, messages): 
+                print(message)
+                if message:
+                    msg = json.loads(message)
+                    distance = msg['distance']
+                    if 'angle' in msg: # the data is a scan
+                        angle = msg['angle']
+                        plot_point(distance, angle)
+                    if 'size' in msg: # the data is an obstacle
+                        size = msg['size']
+                        middle_angle = msg['angle_middle']
+                        plot_point(distance, middle_angle, fill='red', radius=size)
+                else:
+                    break
+>>>>>>> origin/main
         except OSError:
             break
         except Exception as e:
