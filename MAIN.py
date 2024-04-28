@@ -1,67 +1,45 @@
-import tkinter as tk
-import socket
-import threading
+import math
+from django.http import JsonResponse
 
-# This list will store all received messages
-received_messages = []
+# Helper function to convert polar coordinates to Cartesian
+def polar_to_cartesian(degrees, distance):
+    radians = degrees * (math.pi / 180)
+    x = distance * math.cos(radians)
+    y = distance * math.sin(radians)
+    return {'x': x, 'y': y}
 
-# Function to handle incoming messages from the CyBot
-def receive_messages(client_socket, text_output):
-    while True:
-        try:
-            message = client_socket.recv(1024).decode()
-            if message:
-                received_messages.append(message)  # Store received message
-                text_output.insert(tk.END, f"Bot: {message}\n")
-            else:  # No message means the connection was closed
-                break
-        except OSError:  # Socket closed from this end
-            break
-        except Exception as e:
-            text_output.insert(tk.END, f"Error: {e}\n")
-            break
+# Converts an array of polar coordinates to Cartesian coordinates
+def convert_polar_to_cartesian_array(polar_coordinates):
+    cartesian_coordinates = []
+    for degrees, distance in polar_coordinates:
+        cartesian = polar_to_cartesian(degrees, distance)
+        cartesian_coordinates.append(cartesian)
+    return cartesian_coordinates
 
-# Function to send command to CyBot
-def send_command(entry, text_output):
-    command = entry.get()
-    entry.delete(0, tk.END)  # Clear the entry field after getting the text
+# Rotate points based on the given angle and direction
+def rotate_points(polar_coordinates, angle, direction):
+    rotated_coordinates = [
+        (((degrees - angle) if direction == 'right' else (degrees + angle)) % 360, distance)
+        for degrees, distance in polar_coordinates
+    ]
+    return convert_polar_to_cartesian_array(rotated_coordinates)
 
-    try:
-        # Connect to the CyBot
-        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_socket.settimeout(3)  # Set timeout for the connection attempt
-        client_socket.connect((host, port))
-        
-        # Start the receiving thread
-        threading.Thread(target=receive_messages, args=(client_socket, text_output), daemon=True).start()
+# Django view to handle rotation and point calculation
+def handle_rotate(request):
+    polar_coordinates = request.GET.get('polar_coordinates', [])
+    angle = float(request.GET.get('angle', 0))
+    direction = request.GET.get('direction', 'left')
 
-        # Send command
-        client_socket.sendall(command.encode())
-        text_output.insert(tk.END, f"Sent: {command}\n")
+    # Parsing the string of coordinates to a list of tuples
+    polar_coordinates = [tuple(map(float, coord.split(','))) for coord in polar_coordinates.split(';')]
 
-    except Exception as e:
-        text_output.insert(tk.END, "Command not sent: Could not connect to CyBot.\n")
+    # Calculate rotated points
+    rotated_points = rotate_points(polar_coordinates, angle, direction)
 
-# Create the main window
-root = tk.Tk()
-root.title("CyBot Terminal")
+    # Return the calculated points as JSON
+    return JsonResponse(rotated_points, safe=False)
 
-# Terminal output
-text_output = tk.Text(root, height=10, width=50)
-text_output.pack(pady=10, padx=10)
+# Example usage in urls.py
+# path('rotate/', handle_rotate, name='rotate')
 
-# Entry widget to type commands
-entry = tk.Entry(root, width=50)
-entry.pack(pady=10, padx=10)
-entry.bind("<Return>", lambda event: send_command(entry, text_output))  # Bind the return key to send command
-
-# Send button
-send_button = tk.Button(root, text="Send Command", command=lambda: send_command(entry, text_output))
-send_button.pack(pady=10)
-
-# CyBot's IP address and port
-host = '192.168.1.1'
-port = 288
-
-root.mainloop()
 
