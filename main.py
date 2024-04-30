@@ -18,7 +18,7 @@ radius = 150
 canvas.create_oval(center_x-radius, center_y-radius, center_x+radius, center_y+radius, outline='gray')
 
 # Draw the CyBot indicator at the center
-cybot_size = 10  # Size of the CyBot's representation
+cybot_size = 30  # Size of the CyBot's representation
 canvas.create_oval(center_x-cybot_size, center_y-cybot_size, center_x+cybot_size, center_y+cybot_size, fill='red')
 
 # List to store scan point references
@@ -44,19 +44,21 @@ def receive_messages():
     while True:
         try:
             message = client_socket.recv(1024).decode()
+            print(f"raw received:\n{message}")
             # Process multiple JSON objects in one message
             messages = [m + '}' for m in message.split('}') if '{' in m]
             for msg in messages:
                 print(msg)
                 data = json.loads(msg)
                 distance = data['distance']
+                distance *= 4
                 if 'angle' in data:  # the data is a scan
                     angle = data['angle']
                     plot_point(distance, angle)
                 if 'size' in data:  # the data is an obstacle
                     size = data['size']
                     middle_angle = data['angle_middle']
-                    plot_point(distance, middle_angle, fill='red', radius=size)
+                    plot_point(distance, middle_angle, fill='yellow', radius=size)
         except OSError:
             break
         except json.JSONDecodeError:
@@ -69,8 +71,9 @@ def connect_to_cybot():
     global client_socket
     try:
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_socket.settimeout(3)
-        client_socket.connect(('127.0.0.1', 288))
+        client_socket.settimeout(10)
+        client_socket.connect(('192.168.1.1', 288))
+        print("connected!")
         threading.Thread(target=receive_messages, daemon=True).start()
     except Exception as e:
         print("Could not connect to CyBot:", e)
@@ -79,6 +82,7 @@ def send_command(command):
     global client_socket
     try:
         client_socket.sendall(command.encode())
+        print(f'sent "{command}"')
     except Exception as e:
         print(f"Error sending command {command}: {e}")
 
@@ -96,6 +100,9 @@ button_right = tk.Button(root, text="Turn Right", command=lambda: send_command('
 button_right.pack(side='right')
 button_scan = tk.Button(root, text="Scan", command=lambda: [clear_scan(), send_command('q')])
 button_scan.pack(pady=10)
-
+text_input = tk.Text(root, height=1, width=5)
+text_input.pack()
+send_button = tk.Button(root, text="send cmd", command=lambda: send_command(text_input.get(1.0,2.0).strip()))
+send_button.pack()
 root.mainloop()
 
