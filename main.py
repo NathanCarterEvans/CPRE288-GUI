@@ -70,7 +70,7 @@ def connect_to_cybot():
     try:
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_socket.settimeout(3)
-        client_socket.connect(('192.168.1.1', 288))
+        client_socket.connect(('127.0.0.1', 288))
         threading.Thread(target=receive_messages, daemon=True).start()
     except Exception as e:
         print("Could not connect to CyBot:", e)
