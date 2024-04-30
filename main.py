@@ -23,6 +23,34 @@ canvas.create_oval(center_x-cybot_size, center_y-cybot_size, center_x+cybot_size
 
 # List to store scan point references
 scan_points = []
+def plot_json(json):
+    if 'type' not in json or 'distance' not in json:
+        return
+
+    distance = json['distance']
+    distance *= 4
+    print(json)
+
+    if json['type'] == 'scan':
+        angle = json['angle']
+        plot_point(distance, angle)
+    elif json['type'] == 'obstacle':
+        size = json['size']
+        middle_angle = json['angle_middle']
+        plot_point(distance, middle_angle, fill='yellow', radius=size)
+
+def parse_json(msg):
+    try:
+        data = json.loads(msg)
+    except json.JSONDecodeError:
+        return {}
+
+    if 'angle' in data:  # the data is a scan
+        data['type'] = "scan"
+    if 'size' in data:  # the data is an obstacle
+        data['type'] = "obstacle"
+    return data
+
 
 def plot_point(distance, angle, fill='blue', radius=5):
     global scan_points
@@ -48,17 +76,8 @@ def receive_messages():
             # Process multiple JSON objects in one message
             messages = [m + '}' for m in message.split('}') if '{' in m]
             for msg in messages:
-                print(msg)
-                data = json.loads(msg)
-                distance = data['distance']
-                distance *= 4
-                if 'angle' in data:  # the data is a scan
-                    angle = data['angle']
-                    plot_point(distance, angle)
-                if 'size' in data:  # the data is an obstacle
-                    size = data['size']
-                    middle_angle = data['angle_middle']
-                    plot_point(distance, middle_angle, fill='yellow', radius=size)
+                json = parse_json(msg)
+                plot_json(json)
         except OSError:
             break
         except json.JSONDecodeError:
