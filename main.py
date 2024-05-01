@@ -9,16 +9,16 @@ root = tk.Tk()
 root.title("CyBot Radar")
 
 # Create a canvas for drawing
-canvas = tk.Canvas(root, width=400, height=400, bg='white')
+canvas = tk.Canvas(root, width=800, height=800, bg='white')
 canvas.pack()
 
 # Draw the radar
-center_x, center_y = 200, 200
-radius = 150
+center_x, center_y = 400, 700
+radius = 100
 canvas.create_oval(center_x - radius, center_y - radius, center_x + radius, center_y + radius, outline='gray')
 
 # Draw the CyBot indicator at the center
-cybot_size = 30  # Size of the CyBot's representation
+cybot_size = 10  # Size of the CyBot's representation
 canvas.create_oval(center_x - cybot_size, center_y - cybot_size, center_x + cybot_size, center_y + cybot_size,
                    fill='red')
 
@@ -32,13 +32,15 @@ def plot_json(json):
 
     if json['type'] == 'scan':
         distance = json['IR'] + cybot_size
+        print(f"ir:{distance}")
         angle = json['angle']
-        # plot_point(distance, angle)
+        plot_point(distance+100, angle)
         distance = json['ping'] + cybot_size
-        plot_point(distance, angle, fill='green')
+        print(f"ping:{distance}")
+        plot_point(distance, angle, fill='red')
     elif json['type'] == 'obstacle':
         size = json['size']
-        distance = json['distance'] + cybot_size
+        distance = json['distance']
         middle_angle = json['angle_middle']
         plot_point(distance, middle_angle, fill='yellow', radius=size)
 
@@ -53,7 +55,7 @@ def parse_json(data):
     return data
 
 
-def plot_point(distance, angle, fill='blue', radius=5):
+def plot_point(distance, angle, fill='blue', radius=2):
     global scan_points
     angle_rad = math.radians(angle)
     x = center_x + distance * math.cos(angle_rad)
@@ -92,7 +94,7 @@ def connect_to_cybot():
     global client_socket
     try:
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_socket.settimeout(3)
+        # client_socket.settimeout(3)
         client_socket.connect(('192.168.1.1', 288))
         print("connected!")
         threading.Thread(target=receive_messages, daemon=True).start()
@@ -127,4 +129,5 @@ text_input = tk.Text(root, height=1, width=5)
 text_input.pack()
 send_button = tk.Button(root, text="send cmd", command=lambda: send_command(text_input.get(1.0, 2.0).strip()))
 send_button.pack()
+connect_to_cybot()
 root.mainloop()
