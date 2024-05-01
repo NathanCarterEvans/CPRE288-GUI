@@ -94,7 +94,7 @@ def connect_to_cybot():
     global client_socket
     try:
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_socket.settimeout(3)
+        # client_socket.settimeout(3)
         client_socket.connect(('192.168.1.1', 288))
         print("connected!")
         threading.Thread(target=receive_messages, daemon=True).start()
@@ -103,6 +103,7 @@ def connect_to_cybot():
 
 
 def send_command(command):
+    connect_to_cybot()
     global client_socket
     try:
         client_socket.sendall(command.encode())
